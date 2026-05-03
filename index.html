@@ -30,7 +30,22 @@
     #langSelect { border: none; background: transparent; font-size: 11px; font-weight: 800; outline: none; cursor: pointer; }
     h1 { color: var(--primary-color); margin: 0 0 15px; font-size: 24px; font-weight: 800; }
     .selectors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    select, .admin-input { padding: 12px; font-size: 14px; border-radius: 12px; width: 100%; background: white; border: 1px solid #ddd; font-weight: 600; box-sizing: border-box; outline: none; }
+    select, .admin-input { 
+  padding: 12px; 
+  font-size: 14px; 
+  border-radius: 12px; 
+  width: 100%; 
+  background: white; 
+  border: 1px solid #ddd; 
+  font-weight: 600; 
+  box-sizing: border-box; /* Isso garante que o padding não "estique" a altura total */
+  outline: none; 
+  
+  /* ADICIONE OU AJUSTE ESTAS LINHAS ABAIXO */
+  height: 48px;            /* Define uma altura fixa para ambos */
+  line-height: 1.2;        /* Alinha o texto internamente */
+  display: block;          /* Garante que o comportamento de bloco seja igual */
+}
     .label-mini { font-size: 9px; font-weight: 800; color: #999; text-align: left; display: block; margin-bottom: 4px; text-transform: uppercase; }
     .legend-box { display: flex; justify-content: center; gap: 20px; margin: 15px 0; padding: 10px; background: #fff; border-radius: 12px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
     .week-group { margin-bottom: 25px; text-align: left; }
@@ -62,8 +77,22 @@
     .close-x { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #999; cursor: pointer; }
     @keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
     @keyframes pulseArea { 0%,100% {box-shadow:0 0 0 0 rgba(255,193,7,0.7);} 50% {box-shadow:0 0 0 12px rgba(255,193,7,0);} }
-    .pulse-active { animation: pulseArea 1.5s infinite; border-radius: 12px; padding: 4px; }
-    .warning-banner { background: #fff3cd; border: 2px solid #ffc107; color: #856404; padding: 12px 15px; border-radius: 12px; margin-bottom: 15px; font-weight: 800; font-size: 13px; text-align: center; display: none; }
+    .pulse-active { animation: pulseArea 1.5s infinite; border-radius: 18px; padding: 4px; }
+    .warning-banner { 
+    background: #fff3cd; 
+    border: 2px solid #ffc107; 
+    color: #856404; 
+    padding: 8px 15px;      /* Diminuí um pouco o padding vertical de 12 para 8 */
+    border-radius: 50px; 
+    font-weight: 800; 
+    font-size: 13px; 
+    text-align: center; 
+    display: none;
+
+    /* --- ADICIONE ESTAS LINHAS --- */
+    max-width: 300px;       /* Ajuste este valor para a largura que desejar */
+    margin: 0 auto 15px auto; /* O 'auto' nas laterais centraliza a moldura */
+}
     .warning-banner.show { display: block; animation: pulse 1.8s infinite; }
     .status-inactive { opacity: var(--inactive-status-opacity); filter: grayscale(0.1); }
    
@@ -139,6 +168,11 @@
       <span id="legAvail">✅ Disponível</span>
       <span id="legUnavail">❌ Indisponível</span>
     </div>
+    <!-- Este é o banner que aparecerá se a semana já tiver histórico -->
+<div id="changeAlert" class="warning-banner">
+    Você está alterando a disponibilidade que enviou recentemente.
+</div>
+
     <div id="weeksContainer"></div>
     <button id="sendBtn" class="btn" style="background:var(--success)">Enviar via WhatsApp</button>
     <div id="secondaryButtons" class="selectors-grid" style="margin-top:10px;">
@@ -216,6 +250,7 @@
     </div>
   </div>
   <script>
+
     const LANGS = {
       pt: {
         send:"Enviar via WhatsApp",cal:"Calendário",share:"Partilhar",qty:"Quantidade",jump:"Semanas",date:"DATA",week:"Semana",
