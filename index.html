@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>SBL Availability 2026</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SBL 2026">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22%230077cc%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22black%22 font-family=%22sans-serif%22 font-weight=%22bold%22 font-size=%2235%22 dy=%22.3em%22>SBL</text></svg>">
+  <style>
+    :root {
+      --primary-color: #0077cc;
+      --accent-color: #0055aa;
+      --logo-text-color: #000000;
+      --bg-gray: #f8f9fa;
+      --success: #25D366;
+      --share-color: #6c757d;
+      --not-worked: #ffcccc;
+      --worked: #28a745;
+      --inactive-status-opacity: 0.5;
+    }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-gray); text-align: center; padding: 15px; color: #333; margin: 0; user-select: none; -webkit-user-select: none; }
+    .app-container { max-width: 450px; margin: 0 auto; position: relative; padding-bottom: 30px; }
+    .header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 5px; }
+    .icon-btn { font-size: 22px; cursor: pointer; padding: 10px; background: white; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; border: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .logo-circle { width: 60px; height: 60px; background: var(--primary-color); color: var(--logo-text-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.15); flex-shrink: 0; }
+    .lang-box { position: absolute; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: bold; z-index: 100; }
+    #langSelect { border: none; background: transparent; font-size: 11px; font-weight: 800; outline: none; cursor: pointer; }
+    h1 { color: var(--primary-color); margin: 0 0 15px; font-size: 24px; font-weight: 800; }
+    .selectors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    select, .admin-input { padding: 12px; font-size: 14px; border-radius: 12px; width: 100%; background: white; border: 1px solid #ddd; font-weight: 600; box-sizing: border-box; outline: none; }
+    .label-mini { font-size: 9px; font-weight: 800; color: #999; text-align: left; display: block; margin-bottom: 4px; text-transform: uppercase; }
+    .legend-box { display: flex; justify-content: center; gap: 20px; margin: 15px 0; padding: 10px; background: #fff; border-radius: 12px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+    .week-group { margin-bottom: 25px; text-align: left; }
+    .week-title { text-align: center; font-weight: 700; color: var(--accent-color); margin: 20px 0 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-style: italic; }
+    .day-row { display: grid; grid-template-columns: 1.6fr 1fr 0.6fr; align-items: center; padding: 12px 15px; background: #fff; margin-bottom: 8px; border-radius: 15px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: background 0.1s ease; }
+    .day-row:active { background-color: #f0f0f0; }
+    .status-cell { font-size: 20px; text-align: right; min-width: 30px; transition: opacity 0.2s ease; }
+    .day-name-cell { text-align: left; font-weight: 700; font-size: 17px; }
+    .day-date-value { font-size: 13px; font-weight: 800; color: var(--primary-color); }
+    .btn { width: 100%; padding: 16px; border: none; border-radius: 15px; color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 10px; }
+    .work-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 15px 0; }
+    .work-day-box { aspect-ratio: 0.9; background: var(--not-worked); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1.5px solid #ffa6a6; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.1s ease, background 0.15s ease; }
+    .work-day-box:active { transform: scale(0.94); }
+    .work-day-box.active { background: var(--worked) !important; color: white !important; border-color: #1e7e34; }
+    .work-day-box * { pointer-events: none; }
+    .wd-num { font-size: 20px; font-weight: 900; line-height: 1; }
+    .wd-name { font-size: 9px; font-weight: 800; text-transform: uppercase; opacity: 0.9; }
+    .view-layer { display: none; position: fixed; inset: 0; background: var(--bg-gray); z-index: 500; overflow-y: auto; padding: 15px; }
+    .history-split-container { display: flex; gap: 10px; margin-top: 10px; min-height: 50px; align-items: flex-start; }
+    .history-column { flex: 1; display: flex; flex-direction: column; gap: 10px; max-width: 50%; }
+    .history-divider { width: 2px; background: #eee; border-radius: 2px; align-self: stretch; }
+    .history-card { background: #fff; border-radius: 15px; padding: 12px; border-left: 5px solid var(--success); text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; width: 100%; box-sizing: border-box; }
+    .history-card.right-side { border-left-color: var(--primary-color); }
+    .history-time { font-size: 10px; font-weight: 800; color: #bbb; display: block; margin-bottom: 8px; text-transform: uppercase; }
+    .history-body { font-family: monospace; font-size: 7.5px; white-space: pre-wrap; color: #333; line-height: 1.4; font-weight: 700; margin: 0; word-break: break-all; }
+    .history-counter { position: absolute; top: 10px; right: 10px; background: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .modal-content { background: white; border-radius: 20px; width: 90%; max-width: 420px; padding: 25px; box-sizing: border-box; max-height: 85vh; overflow-y: auto; position: relative; }
+    .close-x { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #999; cursor: pointer; }
+    @keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
+    @keyframes pulseArea { 0%,100% {box-shadow:0 0 0 0 rgba(255,193,7,0.7);} 50% {box-shadow:0 0 0 12px rgba(255,193,7,0);} }
+    .pulse-active { animation: pulseArea 1.5s infinite; border-radius: 12px; padding: 4px; }
+    .warning-banner { background: #fff3cd; border: 2px solid #ffc107; color: #856404; padding: 12px 15px; border-radius: 12px; margin-bottom: 15px; font-weight: 800; font-size: 13px; text-align: center; display: none; }
+    .warning-banner.show { display: block; animation: pulse 1.8s infinite; }
+    .status-inactive { opacity: var(--inactive-status-opacity); filter: grayscale(0.1); }
+   
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: 35px repeat(7, 1fr);
+      gap: 1px;
+      background: #ddd;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    .calendar-grid > div {
+      transition: transform 0.1s ease;
+    }
+    .calendar-grid > div:active {
+      transform: scale(0.97);
+    }
+   
+    .history-header {
+      text-align: center;
+      font-size: 9px;
+      font-weight: 900;
+      color: #bbb;
+      margin-bottom: 8px;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+   
+    .footer-credits {
+      margin-top: 40px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+      text-align: center;
+    }
+    .credits-line {
+      font-size: 10px;
+      font-weight: 900;
+      color: #ccc;
+      letter-spacing: 2px;
+      line-height: 1.5;
+    }
+   
+    @media print {
+      body { background: white !important; padding: 0 !important; }
+      #homeView, .header-nav, .btn, #secondaryButtons, #mainSelectors, .legend-box, #historySection, .lang-box, .icon-btn, .modal, footer { display: none !important; }
+      .view-layer { position: static !important; display: block !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container" id="homeView">
+    <div class="lang-box">
+      <select id="langSelect" onchange="changeLang(this.value)">
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+        <option value="ro">Română</option>
+      </select>
+    </div>
+    <div class="header-nav">
+      <button class="icon-btn" onclick="openWorkLog()">📋</button>
+      <div class="logo-circle" id="mainLogo">SBL</div>
+      <div style="width: 42px;"></div>
+    </div>
+    <h1 id="displayAppName">Weekly Availability</h1>
+    <div id="weekWarning" class="warning-banner">⚠️ <span id="warningText">Selecione a semana específica</span></div>
+    <div id="mainSelectors" class="selectors-grid">
+      <div><span class="label-mini" id="lblQty">Quantidade</span><select id="weekSelect" onchange="renderWeeks()"></select></div>
+      <div><span class="label-mini" id="lblJump">Semanas</span><select id="startWeekJump" onchange="renderWeeks()"></select></div>
+    </div>
+    <div class="legend-box">
+      <span id="legAvail">✅ Disponível</span>
+      <span id="legUnavail">❌ Indisponível</span>
+    </div>
+    <div id="weeksContainer"></div>
+    <button id="sendBtn" class="btn" style="background:var(--success)">Enviar via WhatsApp</button>
+    <div id="secondaryButtons" class="selectors-grid" style="margin-top:10px;">
+      <button id="calBtn" class="btn" style="background:var(--primary-color); margin-top:0;">Calendário</button>
+      <button id="shareBtn" class="btn" style="background:var(--share-color); margin-top:0;">Partilhar</button>
+    </div>
+    <div id="historySection" style="margin-top:30px; display:none;">
+      <div class="history-split-container">
+        <div class="history-column">
+          <div class="history-header">WEEKLY<br>AVAILABILITY</div>
+          <div id="historyListLeft"></div>
+        </div>
+        <div class="history-divider"></div>
+        <div class="history-column">
+          <div class="history-header">DAYS<br>WORKED</div>
+          <div id="historyListRight"></div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 15px;">
+        <span id="clearHistoryBtn" style="color:red; cursor:pointer; font-size: 10px; font-weight: 800;">LIMPAR HISTÓRICO</span>
+      </div>
+    </div>
+    <footer class="footer-credits">
+      <div class="credits-line">POWERED BY</div>
+      <div class="credits-line">VALTAIL SOLUTIONS</div>
+      <a href="https://wa.me/4407508309536" target="_blank" style="text-decoration:none; display:inline-block; margin-top:10px; background:#fff; padding:8px 15px; border-radius:20px; border:1px solid #eee; color:#555; font-size:12px; font-weight:800;">🎧 <span id="lblSupport">Suporte</span></a>
+    </footer>
+  </div>
+  <div id="viewWorkLog" class="view-layer">
+    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+      <button onclick="closeWorkLog()" class="icon-btn" style="border:none; background:white; border-radius:50%; width:40px; height:40px; box-shadow:0 2px 8px rgba(0,0,0,0.1); cursor:pointer;">⬅️</button>
+      <h2 id="txtWorkTitle" style="margin:0; font-size:18px; color:var(--primary-color); font-family: sans-serif;">Espelho de Trabalho</h2>
+      <button onclick="window.print()" class="icon-btn" style="border:none; background:white; border-radius:50%; width:40px; height:40px; box-shadow:0 2px 8px rgba(0,0,0,0.1); cursor:pointer;">🖨️</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+   
+    <div style="margin-top:15px; font-size:10px; font-weight:bold; color:#999; text-align:center; padding-bottom:30px; font-family: sans-serif;">
+      W = Semana do Ano • Cores distinguem os meses<br>
+      Clique nos dias para marcar como trabalhado
+    </div>
+  </div>
+  <div id="faqModal" class="modal">
+    <div class="modal-content">
+      <div class="close-x" onclick="closeModal('faqModal')">×</div>
+      <h2 id="faqTitle" style="color:var(--primary-color); margin-top:0; font-size: 20px; text-align: left;">Manual</h2>
+      <div id="faqContent" style="text-align:left; font-size:13px; line-height:1.5; color:#555;"></div>
+    </div>
+  </div>
+  <div id="adminPanel" class="modal">
+    <div class="modal-content">
+      <div class="close-x" onclick="closeModal('adminPanel')">×</div>
+      <h2 style="margin-top:0; text-align: left;" id="admTitle">Configurações</h2>
+      <div style="display:grid; gap:10px;">
+        <div><span class="label-mini">Nome do App</span><input type="text" id="cfgAppName" class="admin-input"></div>
+        <div><span class="label-mini">Sigla Logo</span><input type="text" id="cfgIconInitials" class="admin-input"></div>
+        <div><span class="label-mini">Nome Evento</span><input type="text" id="cfgCustomName" class="admin-input"></div>
+        <div class="selectors-grid">
+          <div><span class="label-mini">Cor Principal</span><input type="color" id="cfgMainColor" class="admin-input" style="height:45px;"></div>
+          <div><span class="label-mini">Cor Logo</span><input type="color" id="cfgLogoTextColor" class="admin-input" style="height:45px;"></div>
+        </div>
+        <div><span class="label-mini">Limite Semanas</span><input type="number" id="cfgMaxWeeks" class="admin-input"></div>
+        <div><span class="label-mini">Idioma WhatsApp</span><select id="cfgMsgLang" class="admin-input"><option value="pt">Português</option><option value="en">English</option><option value="ro">Română</option></select></div>
+        <div><span class="label-mini">Início da Semana</span><select id="cfgWeekStart" class="admin-input"><option value="0">Domingo</option><option value="1">Segunda-feira</option></select></div>
+        <div><span class="label-mini">Botão Calendário</span><select id="cfgShowCal" class="admin-input"><option value="yes">Mostrar</option><option value="no">Ocultar</option></select></div>
+      </div>
+      <button id="saveConfig" class="btn" style="background:black; margin-top:15px;">Salvar Alterações</button>
+    </div>
+  </div>
+  <div id="printModal" class="modal">
+    <div class="modal-content">
+      <div class="close-x" onclick="closeModal('printModal')">×</div>
+      <h3 id="lblPrintSelect">Selecionar Semanas</h3>
+      <div id="printWeekList" style="margin: 20px 0; max-height: 250px; overflow-y: auto; text-align: left;"></div>
+      <button onclick="executePrint()" class="btn" style="background:var(--primary-color)" id="btnGenPDF">Gerar PDF</button>
+    </div>
+  </div>
+  <script>
+    const LANGS = {
+      pt: {
+        send:"Enviar via WhatsApp",cal:"Calendário",share:"Partilhar",qty:"Quantidade",jump:"Semanas",date:"DATA",week:"Semana",
+        avail:"Disponível",unavail:"Indisponível",history:"RELATÓRIOS RECENTES",clear:"LIMPAR",faqT:"📖 Manual de Uso",support:"Suporte",
+        workT:"Espelho de Trabalho",selW:"Selecionar Semanas",genP:"Gerar PDF",
+        sendWork:"📤 Enviar Relatório de Trabalho",noWorkData:"Nenhum dia trabalhado registado.",
+        worked:"Trabalhou",notWorked:"Não trabalhou",appTitle:"Dias Trabalhados",weeklyAvailTitle:"Disponibilidade Semanal",
+        selectPlaceholder:"Selecionar",warningMsg:"Selecione a semana específica para liberar os dias",
+        days:["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"],
+        faqItems:[
+          "1. COMO USAR: Selecione as semanas e toque nos dias para alternar entre disponível e indisponível.",
+          "2. ENVIAR: O botão verde gera a mensagem automática para o WhatsApp.",
+          "3. HISTÓRICO: Fica na parte de baixo. Esquerda mostra a disponibilidade, Direita os dias trabalhados.",
+          "4. TRABALHO: Toque no ícone da prancheta (topo esquerda) para marcar os dias que você efetivamente trabalhou.",
+          "5. PDF: Dentro do Espelho de Trabalho, toque na impressora para gerar um relatório em PDF das semanas.",
+          "6. SEMANAS: Você pode ajustar quantas semanas quer ver e por qual semana começar nos seletores do topo.",
+          "7. CONFIGURAÇÕES: Segure o círculo do logo (SBL) por 3 segundos para abrir o painel administrativo.",
+          "8. SUPORTE: Use o botão de suporte no rodapé se tiver qualquer dificuldade técnica."
+        ]
+      },
+      en: {
+        send:"Send via WhatsApp",cal:"Calendar",share:"Share",qty:"Quantity",jump:"Weeks",date:"DATE",week:"Week",
+        avail:"Available",unavail:"Unavailable",history:"RECENT REPORTS",clear:"CLEAR",faqT:"📖 User Manual",support:"Support",
+        workT:"Work Log",selW:"Select Weeks",genP:"Generate PDF",
+        sendWork:"📤 Send Work Report",noWorkData:"No worked days recorded.",
+        worked:"Worked",notWorked:"Did not work",appTitle:"Days Worked",weeklyAvailTitle:"Weekly Availability",
+        selectPlaceholder:"Select",warningMsg:"Select the specific week to unlock the days",
+        days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+        faqItems:[
+          "1. HOW TO USE: Select weeks and tap days to toggle between available and unavailable.",
+          "2. SEND: The green button generates the automatic WhatsApp message.",
+          "3. HISTORY: Located at the bottom. Left shows availability, Right shows worked days.",
+          "4. WORK: Tap the clipboard icon (top left) to mark the days you actually worked.",
+          "5. PDF: Inside the Work Log, tap the printer to generate a PDF report of the weeks.",
+          "6. WEEKS: Adjust how many weeks to see and starting week in the top selectors.",
+          "7. SETTINGS: Hold the logo circle (SBL) for 3 seconds to open the admin panel.",
+          "8. SUPPORT: Use the support button in the footer for any technical difficulties."
+        ]
+      },
+      ro: {
+        send:"Trimite WhatsApp",cal:"Calendar",share:"Partajează",qty:"Cantitate",jump:"Săptămâni",date:"DATA",week:"Săptămâna",
+        avail:"Disponibil",unavail:"Indisponibil",history:"RAPOARTE RECENTE",clear:"ȘTERGE",faqT:"📖 Manual",support:"Suport",
+        workT:"Oglindă Lucru",selW:"Selectați Săptămânile",genP:"Generează PDF",
+        sendWork:"📤 Trimite Raport Lucru",noWorkData:"Nicio zi lucrată înregistrată.",
+        worked:"A lucrat",notWorked:"Nu a lucrat",appTitle:"Zile Lucrate",weeklyAvailTitle:"Disponibilitate Săptămânală",
+        selectPlaceholder:"Selectați",warningMsg:"Selectați săptămâna specifică pentru a debloca zilele",
+        days:["Duminică","Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"],
+        faqItems:[
+          "1. CUM SE UTILIZEAZĂ: Selectați săptămânile și atingeți zilele pentru a comuta.",
+          "2. TRIMITE: Butonul verde generează mesajul automat pe WhatsApp.",
+          "3. ISTORIC: Jos. Stânga arată disponibilitatea, Dreapta zilele lucrate.",
+          "4. LUCRU: Atingeți pictograma clipboard (stânga sus) pentru a marca zilele lucrate.",
+          "5. PDF: În Oglinda Lucru, atingeți imprimanta pentru PDF.",
+          "6. SĂPTĂMÂNI: Ajustați numărul și începutul săptămânilor din selectori.",
+          "7. SETĂRI: Țineți logo-ul (SBL) timp de 3 secunde pentru panoul de administrare.",
+          "8. SUPORT: Butonul de suport pentru dificultăți tehnice."
+        ]
+      }
+    };
+function getWeekDate(week, dayIdx) {
+    const base = getDateOfISOWeek(week, 2026); // Retorna a Segunda-feira daquela semana
+    const d = new Date(base);
+    
+    // O padrão ISO (getDateOfISOWeek) retorna a Segunda-feira.
+    // No JS: 0=Dom, 1=Seg, 2=Ter...
+    // Se o dia pedido (dayIdx) for Domingo (0), precisamos voltar 1 dia da Segunda-feira.
+    // Se for Segunda (1), somamos 0. Se for Terça (2), somamos 1...
+    
+    const offset = dayIdx === 0 ? -1 : dayIdx - 1;
+    d.setDate(base.getDate() + offset);
+    
+    return d;
+}
+function formatKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+    let config = { appName:"Weekly Availability", iconInitials:"SBL", mainColor:"#0077cc", logoTextColor:"#000000", maxWeeks:6, customName:"", msgLang:"pt", weekStart:0, showCal:"yes" };
+    let curLang = 'pt', history = [], selections = {}, workRecords = {};
+    function addToHistoryWithNoDuplication(entry) {
+  const weekNum = entry.weeks[0];
+  history = history.filter(h => !h.weeks || !h.weeks.includes(weekNum));
+  // 🔥 IMPORTANTE: garante snapshot profundo das seleções
+  entry.snapshot = JSON.parse(JSON.stringify(selections));
+  history.unshift(entry);
+  history = history.slice(-15);
+  localStorage.setItem('_v_hist_smart_v4', JSON.stringify(history));
+}
+    function init() {
+      const savedCfg = localStorage.getItem('_v_cfg_vFinalV8_updated');
+      if (savedCfg) config = { ...config, ...JSON.parse(savedCfg) };
+      const savedHist = localStorage.getItem('_v_hist_smart_v4');
+      if (savedHist) history = JSON.parse(savedHist);
+      const savedSels = localStorage.getItem('_v_sels');
+      if (savedSels) selections = JSON.parse(savedSels);
+      const savedWork = localStorage.getItem('_v_work_v2');
+      if (savedWork) workRecords = JSON.parse(savedWork);
+      curLang = config.msgLang;
+      applyStyles();
+      populateSelectors();
+      updateUI();
+      renderCalendar();
+    }
+    function updateUI() {
+      const l = LANGS[curLang] || LANGS['pt'];
+      document.getElementById('sendBtn').textContent = l.send;
+      document.getElementById('calBtn').textContent = l.cal;
+      document.getElementById('shareBtn').textContent = l.share;
+      document.getElementById('lblQty').textContent = l.qty;
+      document.getElementById('lblJump').textContent = l.jump;
+      document.getElementById('lblSupport').textContent = l.support;
+      document.getElementById('txtWorkTitle').textContent = l.workT;
+      document.getElementById('legAvail').textContent = "✅ " + l.avail;
+      document.getElementById('legUnavail').textContent = "❌ " + l.unavail;
+      document.getElementById('calBtn').style.display = config.showCal === 'yes' ? 'block' : 'none';
+      const faqIcons = ["📅","🟢","📜","📋","🖨️","🔢","⚙️","🎧"];
+      document.getElementById('faqContent').innerHTML = l.faqItems.map((item,i) => `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; display:flex; align-items:flex-start; gap:8px;"><span style="display:inline-block; animation: pulse 2s infinite; font-size:16px;">${faqIcons[i]||'👉'}</span><span>${item}</span></div>`).join('');
+      setupLogoActions();
+      populateSelectors();
+      renderWeeks();
+      renderHistory();
+    }
+function buildHistoryBody({ title, legendOk, legendNo, weeks, getStatus }) {
+  const reportLang = LANGS[config.msgLang] || LANGS['pt'];
+  const order = config.weekStart == 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+  let msg = `*${title}*\n\n${legendOk}\n${legendNo}\n\n`;
+
+  weeks.forEach(wNum => {
+    msg += `*${config.customName ? config.customName : reportLang.week + " " + wNum}*\n`;
+    order.forEach((dayIdx) => {
+      const d = getWeekDate(wNum, dayIdx); 
+      const status = getStatus(wNum, dayIdx);
+      msg += `${status} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${reportLang.days[dayIdx].substring(0, 3)}\n`;
+    });
+    msg += `\n`;
+  });
+  msg += `Powered by VALTAIL<br>SOLUTIONS`;
+  
+  // ESTA LINHA ABAIXO É A QUE AJUSTA O LAYOUT DO TÍTULO
+  return msg.replace(/\*(.*?)\*/g, '<b style="display: block; font-size: 10px; font-weight: 900; line-height: 1.1; text-transform: uppercase; margin-bottom: 5px; min-height: 22px; white-space: normal;">$1</b>');
+}
+
+
+function safeDate(y, m, d) {
+  return new Date(y, m - 1, d, 12, 0, 0);
+}
+    function renderHistory() {
+  const left = document.getElementById('historyListLeft');
+  const right = document.getElementById('historyListRight');
+  if (!left || !right) return;
+
+  left.innerHTML = "";
+  right.innerHTML = "";
+
+  if (history.length === 0 && Object.keys(workRecords).length === 0) {
+    document.getElementById('historySection').style.display = 'none';
+    return;
+  }
+  document.getElementById('historySection').style.display = 'block';
+
+  const reportLang = LANGS[curLang] || LANGS['pt'];
+  const currentWeek = getCurrentWeekISO();
+
+  // ==========================================
+  // COLUNA ESQUERDA (DISPONIBILIDADE)
+  // ==========================================
+  const sortedHistoryLeft = [...history]
+    .filter(h => h.type !== 'work')
+    .sort((a, b) => Math.max(...b.weeks.map(Number)) - Math.max(...a.weeks.map(Number)));
+
+  sortedHistoryLeft.forEach(h => {
+    const leftBody = buildHistoryBody({
+title: "Weekly<br>Availability", 
+      legendOk: `✅ ${reportLang.avail}`,
+      legendNo: `❌ ${reportLang.unavail}`,
+// ... resto do código
+      weeks: h.weeks,
+      getStatus: (wNum, dayIdx) => {
+        const snap = h.snapshot || {};
+        return snap[`${wNum}-${dayIdx}`] || "✅";
+      }
+    });
+    left.innerHTML += `
+      <div class="history-card" style="margin-bottom:12px;">
+        <span class="history-time">${h.time}</span>
+        <div class="history-body">${leftBody}</div>
+      </div>
+    `;
+  });
+
+  // ==========================================
+  // COLUNA DIREITA (DIAS TRABALHADOS - FIXO 5 SEMANAS)
+  // ==========================================
+  let weeksMap = {};
+  for (let i = 0; i < 5; i++) {
+    weeksMap[currentWeek - i] = [];
+  }
+
+  Object.keys(workRecords).forEach(key => {
+    if (workRecords[key] != 1) return;
+    const [y, m, d] = key.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const tempDate = new Date(date.valueOf());
+    const dayNum = (date.getDay() + 6) % 7;
+    tempDate.setDate(tempDate.getDate() - dayNum + 3);
+    const firstThursday = new Date(tempDate.getFullYear(), 0, 4);
+    const weekNum = 1 + Math.round((tempDate - firstThursday) / (7 * 24 * 60 * 60 * 1000));
+
+    if (weeksMap[weekNum] !== undefined) {
+      weeksMap[weekNum].push(date);
+    }
+  });
+
+  const sortedWeeksKeys = Object.keys(weeksMap).map(Number).sort((a, b) => b - a);
+  
+  sortedWeeksKeys.forEach(weekNum => {
+    let totalWorked = 0;
+        const bodyContent = buildHistoryBody({
+      title: "Days<br>WORKED", // Mudei aqui para ficar curto e padronizado
+      legendOk: "✅ " + reportLang.worked,
+      // ...
+
+      legendOk: "✅ " + reportLang.worked,
+      legendNo: "❌ " + reportLang.notWorked,
+      weeks: [weekNum],
+      getStatus: (wNum, dayIdx) => {
+        const d = getWeekDate(wNum, dayIdx);
+        const key = formatKey(d);
+        if (workRecords[key] == 1) {
+          totalWorked++;
+          return "✅";
+        }
+        return "❌";
+      }
+    });
+
+    right.innerHTML += `
+      <div class="history-card right-side" style="margin-bottom:12px;">
+        <span class="history-time">${reportLang.week} ${weekNum}</span>
+        <div class="history-counter">${totalWorked}</div>
+        <div class="history-body">${bodyContent}</div>
+      </div>
+    `;
+  });
+} // <--- FIM DA FUNÇÃO RENDERHISTORY
+
+    function getWorkStatus(weekNum, dayIdx) {
+      const key = `W${weekNum}`;
+      return workRecords[key] && workRecords[key][dayIdx] === 1 ? 1 : 0;
+    }
+    function setWorkStatus(weekNum, dayIdx, value) {
+      const key = `W${weekNum}`;
+      if (!workRecords[key]) workRecords[key] = [0,0,0,0,0,0,0];
+      workRecords[key][dayIdx] = value ? 1 : 0;
+      localStorage.setItem('_v_work_v2', JSON.stringify(workRecords));
+    }
+    document.getElementById('calBtn').onclick = () => {
+      window.location.href = "content://com.android.calendar/time/";
+      setTimeout(() => { window.location.href = "calshow://"; }, 100);
+    };
+    document.getElementById('shareBtn').onclick = async () => {
+      if (navigator.share) { try { await navigator.share({ title: config.appName, url: window.location.href }); } catch (err) {} }
+      else { alert("Link: " + window.location.href); }
+    };
+    document.getElementById('saveConfig').onclick = () => {
+      config.appName = document.getElementById('cfgAppName').value;
+      config.iconInitials = document.getElementById('cfgIconInitials').value;
+      config.customName = document.getElementById('cfgCustomName').value;
+      config.mainColor = document.getElementById('cfgMainColor').value;
+      config.logoTextColor = document.getElementById('cfgLogoTextColor').value;
+      config.maxWeeks = parseInt(document.getElementById('cfgMaxWeeks').value) || 6;
+      config.msgLang = document.getElementById('cfgMsgLang').value;
+      config.weekStart = parseInt(document.getElementById('cfgWeekStart').value);
+      config.showCal = document.getElementById('cfgShowCal').value;
+      localStorage.setItem('_v_cfg_vFinalV8_updated', JSON.stringify(config));
+      location.reload();
+    };
+    document.getElementById('sendBtn').onclick = () => {
+      const reportLang = LANGS[config.msgLang] || LANGS['pt'];
+      let activeWeeks = [];
+      document.querySelectorAll('.week-group').forEach((g) => {
+        activeWeeks.push(parseInt(g.querySelector('.week-title').getAttribute('data-week-num')));
+      });
+      activeWeeks.sort((a,b) => b-a);
+      if (activeWeeks.length === 0) return;
+      let msg = `*${reportLang.weeklyAvailTitle}*\n\n✅ ${reportLang.avail} | ❌ ${reportLang.unavail}\n\n`;
+      activeWeeks.forEach(weekNum => {
+        msg += `*${config.customName ? config.customName : reportLang.week + " " + weekNum}*\n\n`;
+        const order = config.weekStart == 1 ? [1,2,3,4,5,6,0] : [0,1,2,3,4,5,6];
+        order.forEach(dayIdx => {
+          const status = selections[`${weekNum}-${dayIdx}`] || "✅";
+          const d = getDateOfISOWeek(weekNum, 2026);
+          d.setDate(d.getDate() + (config.weekStart == 1 ? (dayIdx == 0 ? 6 : dayIdx - 1) : dayIdx));
+          msg += `${status} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${reportLang.days[dayIdx]}\n`;
+        });
+        msg += `\n`;
+      });
+      msg += `POWERED BY VALTAIL SOLUTIONS`;
+      const now = new Date();
+      const timeStr = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+     
+      activeWeeks.forEach(weekNum => {
+        addToHistoryWithNoDuplication({
+          time: timeStr,
+          content: msg,
+          weeks: [weekNum],
+          type: 'availability'
+        });
+      });
+     
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
+      activeWeeks.forEach(weekNum => {
+        for (let dayIdx = 0; dayIdx < 7; dayIdx++) selections[`${weekNum}-${dayIdx}`] = "❌";
+      });
+      localStorage.setItem('_v_sels', JSON.stringify(selections));
+      document.getElementById('startWeekJump').value = '';
+      renderWeeks();
+      renderHistory();
+    };
+    function openWorkLog() {
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('viewWorkLog').style.display = 'block';
+      renderCalendar();
+    }
+    function closeWorkLog() {
+      document.getElementById('viewWorkLog').style.display = 'none';
+      document.getElementById('homeView').style.display = 'block';
+      renderHistory();
+    }
+    const monthColors = {
+      0: "#fff5f5", 1: "#ffebeb", 2: "#ffdada", 3: "#ffc9c9",
+      4: "#ffb8b8", 5: "#ffa7a7", 6: "#ff9696", 7: "#ff8585",
+      8: "#ff7474", 9: "#ff6363", 10: "#ff5252", 11: "#f44336"
+    };
+    const dayShortNames = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
+    const monthShortNames = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+    function getAnchorDate(w) {
+    return getDateOfISOWeek(w);
+}
+    function getDayDate(weekNum, dayIdx) {
+    return getWeekDate(weekNum, dayIdx);   // reutilizando a mesma lógica
+}
+function toggleWorkDayP2(weekNum, dayIdx) {
+  const date = getDayDate(weekNum, dayIdx);
+  const key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const current = workRecords[key] == 1 ? 1 : 0;
+  const newStatus = current === 1 ? 0 : 1;
+  workRecords[key] = newStatus;
+  localStorage.setItem('_v_work_v2', JSON.stringify(workRecords));
+  renderCalendar();
+}
+let currentCalendarDate = new Date();
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const daysOfWeekShort = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
+
+  // 1. Cabeçalho dos dias
+  grid.innerHTML += `<div style="background:#f8f9fa; border-bottom:1px solid #ddd;"></div>`;
+  daysOfWeekShort.forEach(d => {
+    grid.innerHTML += `<div style="background:#333;color:#fff;font-size:9px;font-weight:900;padding:10px 0;text-align:center;">${d}</div>`;
+  });
+
+  // 2. Definir intervalo (Atual + 4 anteriores)
+  const currentWeek = getCurrentWeekISO();
+  const weeksToShow = [];
+  for (let i = 4; i >= 0; i--) {
+    weeksToShow.push(currentWeek - i);
+  }
+
+  // 3. Renderizar Semanas
+  weeksToShow.forEach(wNum => {
+    // Rótulo da Semana (Coluna da esquerda)
+    const weekLabel = document.createElement('div');
+    weekLabel.style = "background:#f0f0f0;font-size:10px;font-weight:900;color:var(--primary-color);display:flex;align-items:center;justify-content:center;border-bottom:1px solid #ddd;border-right:1px solid #ddd;font-style:italic;";
+    weekLabel.innerHTML = `W${wNum}`;
+    grid.appendChild(weekLabel);
+
+    // Ordem dos dias (respeitando config.weekStart)
+    const order = config.weekStart == 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+    
+    order.forEach(dayIdx => {
+      const d = getWeekDate(wNum, dayIdx);
+      const key = formatKey(d);
+      const isWorked = workRecords[key] == 1;
+      const isFuture = d > today;
+      const isToday = d.getTime() === today.getTime();
+
+      const dayBox = document.createElement('div');
+      dayBox.style.aspectRatio = "1/1";
+      dayBox.style.display = "flex";
+      dayBox.style.flexDirection = "column";
+      dayBox.style.alignItems = "center";
+      dayBox.style.justifyContent = "center";
+      dayBox.style.borderBottom = "1px solid #eee";
+      dayBox.style.borderRight = "1px solid #eee";
+      dayBox.style.cursor = isFuture ? "not-allowed" : "pointer";
+      dayBox.style.transition = "background 0.2s";
+
+      // Cores
+      if (isWorked) {
+        dayBox.style.backgroundColor = "var(--worked)";
+        dayBox.style.color = "white";
+      } else if (isToday) {
+        dayBox.style.backgroundColor = "#e7f3ff";
+        dayBox.style.color = "var(--primary-color)";
+        dayBox.style.boxShadow = "inset 0 0 0 2px var(--primary-color)";
+      } else {
+        dayBox.style.backgroundColor = "white";
+        dayBox.style.color = "#333";
+      }
+
+      if (isFuture) dayBox.style.opacity = "0.2";
+
+      dayBox.innerHTML = `
+        <span style="font-size:14px;font-weight:900;pointer-events:none;">${d.getDate()}</span>
+        <span style="font-size:7px;font-weight:800;opacity:0.7;pointer-events:none;">${monthShortNames[d.getMonth()]}</span>
+      `;
+
+      // AÇÃO DE CLIQUE - FORÇADA
+      dayBox.addEventListener('click', function() {
+        if (isFuture) return;
+        
+        // Inverte o status
+        if (workRecords[key] == 1) {
+          delete workRecords[key];
+        } else {
+          workRecords[key] = 1;
+        }
+        
+        localStorage.setItem('_v_work_v2', JSON.stringify(workRecords));
+        renderCalendar(); // Atualiza a grade
+        if(typeof renderHistory === "function") renderHistory(); // Atualiza o histórico ao fundo
+      });
+
+      grid.appendChild(dayBox);
+    });
+  });
+}
+
+
+
+    function getDateOfISOWeek(week, year = 2026) {
+    const jan4 = new Date(year, 0, 4);           // 4 de janeiro
+    const firstThursday = new Date(jan4);
+    firstThursday.setDate(jan4.getDate() - (jan4.getDay() + 6) % 7 + 3);
+    
+    const weekStart = new Date(firstThursday);
+    weekStart.setDate(firstThursday.getDate() - 3 + (week - 1) * 7);
+    
+    return weekStart;
+}
+    function setupLogoActions() {
+      const logo = document.getElementById('mainLogo');
+      let timer;
+      logo.onmousedown = logo.ontouchstart = () => {
+        timer = setTimeout(() => {
+          document.getElementById('cfgAppName').value = config.appName;
+          document.getElementById('cfgIconInitials').value = config.iconInitials;
+          document.getElementById('cfgCustomName').value = config.customName;
+          document.getElementById('cfgMainColor').value = config.mainColor;
+          document.getElementById('cfgLogoTextColor').value = config.logoTextColor;
+          document.getElementById('cfgMaxWeeks').value = config.maxWeeks;
+          document.getElementById('cfgMsgLang').value = config.msgLang;
+          document.getElementById('cfgWeekStart').value = config.weekStart;
+          document.getElementById('cfgShowCal').value = config.showCal;
+          openModal('adminPanel');
+        }, 3000);
+      };
+      logo.onmouseup = logo.ontouchend = () => { clearTimeout(timer); };
+      logo.onclick = () => { openModal('faqModal'); };
+    }
+function getCurrentWeekISO() {
+    const now = new Date();
+    const target = new Date(now.valueOf());
+    const dayNr = (now.getDay() + 6) % 7;     // Segunda = 0
+    target.setDate(target.getDate() - dayNr + 3);
+    const firstThursday = new Date(target.getFullYear(), 0, 4);
+    const diff = target - firstThursday;
+    return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
+}
+ function renderWeeks() {
+  const container = document.getElementById("weeksContainer");
+  container.innerHTML = "";
+  const qty = parseInt(document.getElementById("weekSelect").value) || 1;
+  const startWRaw = document.getElementById("startWeekJump").value;
+  const l = LANGS[curLang];
+  const warning = document.getElementById('weekWarning');
+  const sendBtn = document.getElementById('sendBtn');
+  const isWeekSelected = startWRaw && startWRaw !== "";
+  // 👉 calcula próxima semana atual (base de exibição)
+  let startW;
+  if (!isWeekSelected) {
+    const currentWeek = getCurrentWeekISO();
+startW = currentWeek + 1;
+    function getCurrentWeekISO() {
+  const now = new Date();
+  const target = new Date(now.valueOf());
+  const dayNr = (now.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNr + 3);
+  const firstThursday = new Date(target.getFullYear(), 0, 4);
+  const diff = target - firstThursday;
+  return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
+}
+    startW = currentWeek + 1; // 🔥 PRÓXIMA semana
+  } else {
+    startW = parseInt(startWRaw);
+  }
+  // 👉 controle visual (mantém comportamento original)
+  if (!isWeekSelected) {
+    document.getElementById('warningText').textContent = l.warningMsg;
+    warning.classList.add('show');
+    // 🔥 animação só no dropdown da direita
+    document.getElementById('startWeekJump').classList.add('pulse-active');
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = '0.5';
+    sendBtn.style.cursor = 'not-allowed';
+  } else {
+    warning.classList.remove('show');
+    document.getElementById('startWeekJump').classList.remove('pulse-active');
+    sendBtn.disabled = false;
+    sendBtn.style.opacity = '1';
+    sendBtn.style.cursor = 'pointer';
+  }
+  // 👉 render das semanas
+  for (let w = 0; w < qty; w++) {
+    const tW = startW + w;
+    const group = document.createElement("div");
+    group.className = "week-group";
+    group.innerHTML = `<div class="week-title" data-week-num="${tW}">
+      ${config.customName ? config.customName : l.week + " " + tW}
+    </div>`;
+    const base = getDateOfISOWeek(tW, 2026);
+    const order = config.weekStart == 1 ? [1,2,3,4,5,6,0] : [0,1,2,3,4,5,6];
+    order.forEach((idx) => {
+const d = getWeekDate(tW, idx);
+      const row = document.createElement("div");
+      row.className = "day-row";
+      // 🔥 status só aparece se semana foi escolhida
+      const currentStatus = isWeekSelected
+        ? (selections[`${tW}-${idx}`] || "✅")
+        : "";
+      row.innerHTML = `
+        <div class="day-name-cell">${l.days[idx]}</div>
+        <div style="text-align:center">
+          <span class="day-date-value">
+            ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}
+          </span>
+        </div>
+        <div class="status-cell">${currentStatus}</div>
+      `;
+      row.onclick = () => {
+        if (!isWeekSelected) return;
+        const s = row.querySelector(".status-cell");
+        const newStatus = s.textContent === "✅" ? "❌" : "✅";
+        s.textContent = newStatus;
+        selections[`${tW}-${idx}`] = newStatus;
+        localStorage.setItem('_v_sels', JSON.stringify(selections));
+      };
+      group.appendChild(row);
+    });
+    container.appendChild(group);
+  }
+}
+    function populateSelectors() {
+      const l = LANGS[curLang];
+      const q = document.getElementById('weekSelect');
+      q.innerHTML = "";
+      for (let i=1; i<=config.maxWeeks; i++) q.innerHTML += `<option value="${i}">${i} ${l.week}${i>1?'s':''}</option>`;
+      const n = 18;
+      const j = document.getElementById('startWeekJump');
+      const prevVal = j.value;
+      j.innerHTML = `<option value="">-- ${l.selectPlaceholder} --</option>`;
+      for (let i=1; i<=config.maxWeeks; i++) j.innerHTML += `<option value="${n+i}">${l.week} ${n+i}</option>`;
+      if (prevVal) j.value = prevVal;
+    }
+    function applyStyles() {
+      document.documentElement.style.setProperty('--primary-color', config.mainColor);
+      document.documentElement.style.setProperty('--logo-text-color', config.logoTextColor);
+      document.getElementById('displayAppName').textContent = config.appName;
+      document.getElementById('mainLogo').textContent = config.iconInitials;
+    }
+    function changeLang(v) { curLang = v; updateUI(); }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    document.getElementById('clearHistoryBtn').onclick = () => {
+      history = [];
+      localStorage.removeItem('_v_hist_smart_v4');
+      renderHistory();
+    };
+    window.onload = init;
+  </script>
+</body>
+</html>
