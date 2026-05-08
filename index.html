@@ -952,20 +952,49 @@ row.innerHTML = `
     }
 
     function populateSelectors() {
-      const l = LANGS[curLang] || LANGS['pt'];
-      const q = document.getElementById('weekSelect');
-      const prevQty = q.value;
-      q.innerHTML = "";
-      for (let i=1; i<=config.maxWeeks; i++) q.innerHTML += `<option value="${i}">${i} ${l.week}${i>1?'s':''}</option>`;
-      if (prevQty) q.value = prevQty;
 
-      const n = 18;
-      const j = document.getElementById('startWeekJump');
-      const prevVal = j.value;
-      j.innerHTML = `<option value="">-- ${l.selectPlaceholder} --</option>`;
-      for (let i=1; i<=config.maxWeeks; i++) j.innerHTML += `<option value="${n+i}">${l.week} ${n+i}</option>`;
-      if (prevVal) j.value = prevVal;
-    }
+  const l = LANGS[curLang] || LANGS['pt'];
+
+  const q = document.getElementById('weekSelect');
+  const prevQty = q.value;
+
+  q.innerHTML = "";
+
+  // Mantém regra de 1 até 3 semanas
+  for (let i = 1; i <= 3; i++) {
+    q.innerHTML += `<option value="${i}">${i} ${l.week}${i > 1 ? 's' : ''}</option>`;
+  }
+
+  if (prevQty) {
+    q.value = prevQty;
+  } else {
+    q.value = "1";
+  }
+
+  const currentWeek = getCurrentWeekISO();
+
+  const j = document.getElementById('startWeekJump');
+  const prevVal = j.value;
+
+  j.innerHTML = `<option value="">-- ${l.selectPlaceholder} --</option>`;
+
+  // SOMENTE próximas 3 semanas
+  for (let i = 1; i <= 3; i++) {
+
+    const futureWeek = currentWeek + i;
+
+    j.innerHTML += `
+      <option value="${futureWeek}">
+        ${l.week} ${futureWeek}
+      </option>
+    `;
+  }
+
+  // restaura valor somente se ainda existir
+  if ([...j.options].some(opt => opt.value === prevVal)) {
+    j.value = prevVal;
+  }
+}
 
     function applyStyles() {
       document.documentElement.style.setProperty('--primary-color', config.mainColor);
