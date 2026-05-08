@@ -378,7 +378,7 @@
       return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     }
 
-    let config = { appName:"Weekly Availability", iconInitials:"SBL", mainColor:"#0077cc", logoTextColor:"#000000", maxWeeks:6, customName:"", msgLang:"pt", weekStart:0, showCal:"yes" };
+    let config = { appName:"Weekly Availability", iconInitials:"SBL", mainColor:"#0077cc", logoTextColor:"#000000", maxWeeks:3, customName:"", msgLang:"en", weekStart:0, showCal:"yes" };
     let curLang = 'pt', history = [], selections = {}, workRecords = {};
 
     function addToHistoryWithNoDuplication(entry) {
@@ -391,7 +391,7 @@
     }
 
     function init() {
-      const savedCfg = localStorage.getItem('_v_cfg_vFinalV8_updated');
+      const savedCfg = localStorage.getItem('_v_cfg_vFinalV9_updated');
       if (savedCfg) config = { ...config, ...JSON.parse(savedCfg) };
       const savedHist = localStorage.getItem('_v_hist_smart_v4');
       if (savedHist) history = JSON.parse(savedHist);
