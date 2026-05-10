@@ -457,7 +457,7 @@
 
       // Histórico
 
-      document.getElementById('histHeaderRight').innerHTML = l.histWorkedTitle;
+    document.getElementById('histHeaderRight').innerHTML = "";
       document.getElementById('clearHistoryBtn').textContent = l.clear;
 
       // Rodapé do calendário
@@ -636,10 +636,27 @@ function setWorkStatus(date, value) {
   localStorage.setItem('_v_work_v2', JSON.stringify(workRecords));
 }
 
-    document.getElementById('calBtn').onclick = () => {
-      window.location.href = "content://com.android.calendar/time/";
-      setTimeout(() => { window.location.href = "calshow://"; }, 100);
-    };
+document.getElementById('calBtn').onclick = () => {
+
+  const morning =
+    "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=Disponibilidade SBL - Manhã" +
+    "&dates=20260511T084500/20260511T090000" +
+    "&recur=RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR";
+
+  const evening =
+    "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=Disponibilidade SBL - Noite" +
+    "&dates=20260511T190000/20260511T191500" +
+    "&recur=RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR";
+
+  window.open(morning, '_blank');
+
+  setTimeout(() => {
+    window.open(evening, '_blank');
+  }, 1200);
+
+};
     document.getElementById('shareBtn').onclick = async () => {
       if (navigator.share) { try { await navigator.share({ title: config.appName, url: window.location.href }); } catch (err) {} }
       else { alert("Link: " + window.location.href); }
