@@ -159,6 +159,27 @@
     opacity: 0.4 !important;
   }
 }
+    /* --- CORREÇÃO DE ALINHAMENTO DO HISTÓRICO --- */
+#unifiedHistoryContent {
+  display: block !important; 
+  width: 100% !important;
+  padding: 10px;
+}
+.history-row {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+  align-items: flex-start !important;
+}
+.history-row .history-card {
+  flex: 1 !important; 
+  width: 50% !important;
+  margin-bottom: 0 !important;
+  min-height: 180px !important;
+  height: auto !important;
+}
   </style>
 </head>
 <body>
@@ -195,11 +216,15 @@
       <button id="calBtn" class="btn" style="background:var(--primary-color); margin-top:0;">Calendário</button>
       <button id="shareBtn" class="btn" style="background:var(--share-color); margin-top:0;">Partilhar</button>
     </div>
-    <div id="historySection" style="margin-top:30px; display:none;">
-      <div class="history-split-container">
-  <div class="history-column">
-    <div class="history-header" id="histHeaderLeft">WEEKLY<br>AVAILABILITY</div>
-    <div id="historyListLeft"></div>
+
+<div id="historySection" style="margin-top:30px; display:none; width: 100%;">
+  <h3 style="text-align:center; margin-bottom:20px; color:#666; font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">
+    Histórico / History
+  </h3>
+  
+  <div id="unifiedHistoryContent" style="width: 100%;"></div>
+</div>
+    <div id="unifiedHistoryContent"></div>
     <div style="text-align:center; margin-top:12px;">
       <span id="clearHistoryBtn" style="color:red; cursor:pointer; font-size: 9px; font-weight: 800;">LIMPAR</span>
     </div>
@@ -207,7 +232,7 @@
   <div class="history-divider"></div>
   <div class="history-column">
     <div class="history-header" id="histHeaderRight">DAYS<br>WORKED</div>
-    <div id="historyListRight"></div>
+    <div id="unifiedHistoryContent"></div>
     <div style="text-align:center; margin-top:12px;">
       <span id="clearWorkBtn" style="color:red; cursor:pointer; font-size: 9px; font-weight: 800;">LIMPAR</span>
     </div>
@@ -431,7 +456,7 @@
       document.getElementById('changeAlertText').textContent = l.changeAlertMsg;
 
       // Histórico
-      document.getElementById('histHeaderLeft').innerHTML = l.histAvailTitle;
+
       document.getElementById('histHeaderRight').innerHTML = l.histWorkedTitle;
       document.getElementById('clearHistoryBtn').textContent = l.clear;
 
@@ -493,12 +518,11 @@
     function safeDate(y, m, d) { return new Date(y, m - 1, d, 12, 0, 0); }
 
     function renderHistory() {
-  const left = document.getElementById('historyListLeft');
-  const right = document.getElementById('historyListRight');
-  if (!left || !right) return;
 
-  left.innerHTML = "";
-  right.innerHTML = "";
+  const container = document.getElementById('unifiedHistoryContent');
+  if (!container) return;
+
+  container.innerHTML = "";
 
   if (history.length === 0 && Object.keys(workRecords).length === 0) {
     document.getElementById('historySection').style.display = 'none';
@@ -506,98 +530,70 @@
   }
   document.getElementById('historySection').style.display = 'block';
 
-  const currentWeek = getCurrentWeekISO();
+  const currentWeek = getISOWeek(new Date());
   const reportLang = LANGS[config.msgLang] || LANGS['pt'];
   const uiLang = LANGS[curLang] || LANGS['pt'];
 
-  // ===== LEFT MAP =====
+  // ===== MAPAS DE DADOS =====
   const leftMap = {};
-  history
-    .filter(h => h.type === 'availability')
-    .forEach(h => {
-      h.weeks.forEach(w => {
-        if (!leftMap[w]) leftMap[w] = h;
-      });
-    });
+  history.filter(h => h.type === 'availability').forEach(h => {
+    h.weeks.forEach(w => { if (!leftMap[w]) leftMap[w] = h; });
+  });
 
-  // ===== RIGHT MAP =====
   const rightMap = {};
   Object.keys(workRecords).forEach(key => {
     if (workRecords[key] != 1) return;
-
     const [y, m, d] = key.split('-').map(Number);
     const date = new Date(y, m - 1, d);
-
-    const tempDate = new Date(date.valueOf());
-    const dayNum = (date.getDay() + 6) % 7;
-    tempDate.setDate(tempDate.getDate() - dayNum + 3);
-
-    const firstThursday = new Date(tempDate.getFullYear(), 0, 4);
-    const weekNum = 1 + Math.round((tempDate - firstThursday) / (7 * 24 * 60 * 60 * 1000));
-
+    const weekNum = getISOWeek(date);
     rightMap[weekNum] = (rightMap[weekNum] || 0) + 1;
   });
-
-  // ===== WEEKS =====
-  const nextWeek = currentWeek + 1;
 
   const allWeeks = [...new Set([
     ...Object.keys(leftMap).map(Number),
     ...Object.keys(rightMap).map(Number),
     currentWeek,
-    nextWeek
-  ])]
-    .sort((a, b) => b - a)
-    .slice(0, 6);
+    currentWeek + 1
+  ])].sort((a, b) => b - a).slice(0, 6);
 
-  // ===== PLACEHOLDER =====
-  const placeholder = (side, weekNum) => `
-    <div class="history-card ${side}" style="margin-bottom:12px; opacity:0.35; background:#fafafa;">
-      <span class="history-time">${reportLang.week} ${weekNum}</span>
-      <div class="history-body" style="text-align:center; padding:20px 0;">—</div>
-    </div>
-  `;
-
-  // ===== LOOP =====
+  // ===== LOOP POR LINHA (Garante Alinhamento) =====
   allWeeks.forEach(weekNum => {
-
     const isFutureWeek = weekNum > currentWeek;
+    
+    // Criamos a LINHA que segura os dois cards
+    const weekRow = document.createElement('div');
+    weekRow.className = 'history-row';
+    weekRow.style.display = "flex";
+    weekRow.style.gap = "15px";
+    weekRow.style.marginBottom = "20px";
+    weekRow.style.width = "100%";
 
-    // ===== LEFT =====
+    // --- CONTEÚDO ESQUERDO ---
+    let leftHTML = "";
     if (leftMap[weekNum]) {
       const h = leftMap[weekNum];
-
       const leftBody = buildHistoryBody({
         title: uiLang.histAvailTitle,
         legendOk: `✅ ${reportLang.avail}`,
         legendNo: `❌ ${reportLang.unavail}`,
         weeks: [weekNum],
-        getStatus: (wNum, dayIdx) => {
-          const snap = h.snapshot || {};
-          return snap[`${wNum}-${dayIdx}`] || "✅";
-        }
+        getStatus: (wNum, dayIdx) => (h.snapshot || {})[`${wNum}-${dayIdx}`] || "✅"
       });
-
-      left.innerHTML += `
-        <div class="history-card" style="margin-bottom:12px;">
+      leftHTML = `
+        <div class="history-card" style="flex:1; margin-bottom:0;">
           <span class="history-time">${h.time}</span>
           <div class="history-body">${leftBody}</div>
-        </div>
-      `;
+        </div>`;
     } else {
-      left.innerHTML += placeholder('', weekNum);
+      leftHTML = `<div class="history-card" style="flex:1; opacity:0.1; background:#fafafa; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">—</div>`;
     }
 
-    // ===== RIGHT =====
+    // --- CONTEÚDO DIREITO ---
+    let rightHTML = "";
     const hasData = (rightMap[weekNum] || 0) > 0;
     const isCurrent = weekNum === currentWeek;
-
-    const shouldRender = hasData || isCurrent || isFutureWeek;
-
-    if (shouldRender) {
-
+    if (hasData || isCurrent || isFutureWeek) {
       let totalWorked = 0;
-
       const bodyContent = buildHistoryBody({
         title: uiLang.histWorkedTitle,
         legendOk: "✅ " + reportLang.worked,
@@ -606,43 +602,39 @@
         getStatus: (wNum, dayIdx) => {
           const d = getWeekDate(wNum, dayIdx);
           const key = formatKey(d);
-
-          const worked = workRecords[key] == 1;
-          if (worked) {
-            totalWorked++;
-            return "✅";
-          }
-
+          if (workRecords[key] == 1) { totalWorked++; return "✅"; }
           return "❌";
         }
       });
-
-      right.innerHTML += `
-        <div class="history-card right-side"
-             style="margin-bottom:12px;
-                    opacity:${isFutureWeek ? 0.4 : 1};
-                    pointer-events:${isFutureWeek ? 'none' : 'auto'};">
+      rightHTML = `
+        <div class="history-card right-side" style="flex:1; margin-bottom:0; opacity:${isFutureWeek ? 0.4 : 1};">
           <span class="history-time">${reportLang.week} ${weekNum}</span>
           <div class="history-counter">${totalWorked}</div>
           <div class="history-body">${bodyContent}</div>
-        </div>
-      `;
-
+        </div>`;
     } else {
-      right.innerHTML += placeholder('right-side', weekNum);
+      rightHTML = `<div class="history-card right-side" style="flex:1; opacity:0.1; background:#fafafa; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">—</div>`;
     }
+
+    weekRow.innerHTML = leftHTML + rightHTML;
+    container.appendChild(weekRow);
   });
 }
-    function getWorkStatus(weekNum, dayIdx) {
-      const key = `W${weekNum}`;
-      return workRecords[key] && workRecords[key][dayIdx] === 1 ? 1 : 0;
-    }
-    function setWorkStatus(weekNum, dayIdx, value) {
-      const key = `W${weekNum}`;
-      if (!workRecords[key]) workRecords[key] = [0,0,0,0,0,0,0];
-      workRecords[key][dayIdx] = value ? 1 : 0;
-      localStorage.setItem('_v_work_v2', JSON.stringify(workRecords));
-    }
+    
+function getWorkStatus(date) {
+  const key = formatKey(date); 
+  return workRecords[key] === 1 ? 1 : 0;
+}
+
+function setWorkStatus(date, value) {
+  const key = formatKey(date);
+  if (value) {
+    workRecords[key] = 1;
+  } else {
+    delete workRecords[key];
+  }
+  localStorage.setItem('_v_work_v2', JSON.stringify(workRecords));
+}
 
     document.getElementById('calBtn').onclick = () => {
       window.location.href = "content://com.android.calendar/time/";
@@ -759,13 +751,38 @@
       });
 
       // Atual + 4 anteriores
-      const currentWeek = getCurrentWeekISO();
-      const weeksToShow = [];
-      for (let i = 4; i >= 0; i--) weeksToShow.push(currentWeek - i);
+    const currentWeek = getISOWeek(new Date());
+const weeksToShow = [];
+
+// 4 anteriores
+for (let i = 4; i >= 1; i--) {
+  weeksToShow.push(currentWeek - i);
+}
+
+// atual
+weeksToShow.push(currentWeek);
+
+// +2 futuras
+weeksToShow.push(currentWeek + 1);
+weeksToShow.push(currentWeek + 2);
 
       weeksToShow.forEach(wNum => {
+const isFutureWeek = wNum > currentWeek;
         const weekLabel = document.createElement('div');
-        weekLabel.style = "background:linear-gradient(135deg,#f8f9fa,#e9ecef);font-size:13px;font-weight:900;color:var(--primary-color);display:flex;align-items:center;justify-content:center;border-bottom:1px solid #ddd;border-right:1px solid #ddd;font-style:italic;letter-spacing:0.5px;text-shadow:0 1px 1px rgba(0,0,0,0.08);";
+        weekLabel.style = `
+  background:${isFutureWeek ? '#f5f5f5' : 'linear-gradient(135deg,#f8f9fa,#e9ecef)'};
+  opacity:${isFutureWeek ? '0.45' : '1'};
+  font-size:13px;
+  font-weight:900;
+  color:var(--primary-color);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-bottom:1px solid #ddd;
+  border-right:1px solid #ddd;
+  font-style:italic;
+  letter-spacing:0.5px;
+`;
         weekLabel.innerHTML = `W${wNum}`;
         grid.appendChild(weekLabel);
 
@@ -857,15 +874,24 @@ dayBox.innerHTML = `
       logo.onclick = () => { openModal('faqModal'); };
     }
 
-    function getCurrentWeekISO() {
-      const now = new Date();
-      const target = new Date(now.valueOf());
-      const dayNr = (now.getDay() + 6) % 7;
-      target.setDate(target.getDate() - dayNr + 3);
-      const firstThursday = new Date(target.getFullYear(), 0, 4);
-      const diff = target - firstThursday;
-      return 1 + Math.round(diff / (7 * 24 * 60 * 60 * 1000));
-    }
+   function getISOWeek(date) {
+  // Criamos a data de hoje
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  
+  // 1º de Janeiro de 2026
+  const jan1 = new Date(2026, 0, 1, 12, 0, 0);
+  
+  // Calculamos quantos dias se passaram desde o dia 1º
+  const diffInMs = d - jan1;
+  const diffInDays = Math.floor(diffInMs / 86400000);
+  
+  // 2026 começou numa Quinta-feira. 
+  // Para Domingo ser o primeiro dia da semana, o ajuste é +4.
+  // Dividimos por 7 e arredondamos para cima.
+  const weekNo = Math.ceil((diffInDays + 16) / 7);
+  
+  return weekNo;
+}
 
     function renderWeeks() {
       const container = document.getElementById("weeksContainer");
@@ -879,7 +905,7 @@ dayBox.innerHTML = `
 
       let startW;
       if (!isWeekSelected) {
-        startW = getCurrentWeekISO() + 1;
+ startW = getISOWeek(new Date());
       } else {
         startW = parseInt(startWRaw);
       }
@@ -951,46 +977,25 @@ row.innerHTML = `
       }
     }
 
-    function populateSelectors() {
-
+function populateSelectors() {
   const l = LANGS[curLang] || LANGS['pt'];
-
   const q = document.getElementById('weekSelect');
   const prevQty = q.value;
-
   q.innerHTML = "";
-
-  // Mantém regra de 1 até 3 semanas
   for (let i = 1; i <= 3; i++) {
     q.innerHTML += `<option value="${i}">${i} ${l.week}${i > 1 ? 's' : ''}</option>`;
   }
+  q.value = prevQty || "1";
 
-  if (prevQty) {
-    q.value = prevQty;
-  } else {
-    q.value = "1";
-  }
-
-  const currentWeek = getCurrentWeekISO();
-
+  const currentWeek = getISOWeek(new Date());
   const j = document.getElementById('startWeekJump');
   const prevVal = j.value;
-
   j.innerHTML = `<option value="">-- ${l.selectPlaceholder} --</option>`;
 
-  // SOMENTE próximas 3 semanas
-  for (let i = 1; i <= 3; i++) {
-
+  for (let i = 0; i <= 2; i++) {
     const futureWeek = currentWeek + i;
-
-    j.innerHTML += `
-      <option value="${futureWeek}">
-        ${l.week} ${futureWeek}
-      </option>
-    `;
+    j.innerHTML += `<option value="${futureWeek}">${l.week} ${futureWeek}</option>`;
   }
-
-  // restaura valor somente se ainda existir
   if ([...j.options].some(opt => opt.value === prevVal)) {
     j.value = prevVal;
   }
@@ -1048,7 +1053,11 @@ document.getElementById('clearHistoryBtn').onclick = () => {
   // atualiza tela
   renderHistory();
 };
-    window.onload = init;
+    // No final do seu script, onde tem o window.onload:
+window.onload = () => {
+  init();           // Mantém o que já fazia
+  renderHistory();  // ADICIONA isso para o histórico aparecer no F5
+};
   </script>
 </body>
 </html>
