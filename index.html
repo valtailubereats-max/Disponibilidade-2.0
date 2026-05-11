@@ -821,51 +821,65 @@ weeksToShow.push(currentWeek);
 weeksToShow.push(currentWeek + 1);
 weeksToShow.push(currentWeek + 2);
 
-      weeksToShow.forEach(wNum => {
-const isFutureWeek = wNum > currentWeek;
-        const weekLabel = document.createElement('div');
-const isLocked = lockedWeeks[wNum] === true;
-        weekLabel.style = `
-  background:${isFutureWeek ? '#f5f5f5' : 'linear-gradient(135deg,#f8f9fa,#e9ecef)'};
-  opacity:${isFutureWeek ? '0.45' : '1'};
-  font-size:13px;
-  font-weight:900;
-  color:var(--primary-color);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-bottom:1px solid #ddd;
-  border-right:1px solid #ddd;
-  font-style:italic;
-  letter-spacing:0.5px;
-`;
-weekLabel.style.cursor = "pointer";
+weeksToShow.forEach(wNum => {
+  const isFutureWeek = wNum > currentWeek;
+  
+  // REGRA: Se for futuro, SEMPRE travado (true). Se não, usa o valor do seu objeto lockedWeeks.
+  const isLocked = isFutureWeek ? true : (lockedWeeks[wNum] === true);
 
-weekLabel.onclick = () => {
-  toggleWeekLock(wNum);
-};
-
-weekLabel.innerHTML = `
-  <div style="
+  const weekLabel = document.createElement('div');
+  weekLabel.style = `
+    background:${isFutureWeek ? '#f5f5f5' : 'linear-gradient(135deg,#f8f9fa,#e9ecef)'};
+    opacity:${isFutureWeek ? '0.6' : '1'};
+    font-size:13px;
+    font-weight:900;
+    color:var(--primary-color);
     display:flex;
-    flex-direction:column;
     align-items:center;
     justify-content:center;
-    gap:4px;
-    width:100%;
-    height:100%;
-  ">
-    <span>W${wNum}</span>
+    border-bottom:1px solid #ddd;
+    border-right:1px solid #ddd;
+    font-style:italic;
+    letter-spacing:0.5px;
+    cursor: ${isFutureWeek ? 'not-allowed' : 'pointer'};
+  `;
 
-    <span style="
-      font-size:16px;
-      pointer-events:none;
+  // Define o clique: semanas futuras não fazem nada ao clicar
+  if (!isFutureWeek) {
+    weekLabel.onclick = () => {
+      toggleWeekLock(wNum);
+    };
+  }
+
+  weekLabel.innerHTML = `
+    <div style="
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      width:100%;
+      height:100%;
     ">
-      ${isLocked ? '🔒' : '🔓'}
-    </span>
-  </div>
-`;
-        grid.appendChild(weekLabel);
+      <span>W${wNum}</span>
+
+      <span style="
+        font-size:16px;
+        pointer-events:none;
+        /* Vermelho se travado (futuras inclusive), Verde se destravado */
+        filter: ${isLocked 
+          ? 'sepia(1) saturate(10) hue-rotate(-50deg)' 
+          : 'sepia(1) saturate(10) hue-rotate(70deg)'};
+      ">
+        ${isLocked ? '🔒' : '🔓'}
+      </span>
+    </div>
+  `;
+
+  grid.appendChild(weekLabel);
+  
+  // ... resto do seu código (order.forEach dayIdx etc)
+
 
         const order = config.weekStart == 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
 
