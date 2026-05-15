@@ -974,22 +974,34 @@ dayBox.innerHTML = `
     }
 
    function getISOWeek(date) {
-  // Criamos a data de hoje
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  // Fixo para 2026 com semana começando no DOMINGO
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0);
   
-  // 1º de Janeiro de 2026
-  const jan1 = new Date(2026, 0, 1, 12, 0, 0);
+  // Ajusta para o Domingo da semana
+  const dayOfWeek = d.getDay();
+  const sunday = new Date(d);
+  sunday.setDate(d.getDate() - dayOfWeek);
   
-  // Calculamos quantos dias se passaram desde o dia 1º
-  const diffInMs = d - jan1;
-  const diffInDays = Math.floor(diffInMs / 86400000);
+  // Primeiro Domingo de 2026 é 4 de Janeiro
+  const firstSunday2026 = new Date(2026, 0, 4);
+  firstSunday2026.setHours(12, 0, 0, 0);
   
-  // 2026 começou numa Quinta-feira. 
-  // Para Domingo ser o primeiro dia da semana, o ajuste é +4.
-  // Dividimos por 7 e arredondamos para cima.
-  const weekNo = Math.ceil((diffInDays + 16) / 7);
+  // Calcula diferença em dias
+  const diffDays = Math.floor((sunday - firstSunday2026) / (1000 * 60 * 60 * 24));
   
-  return weekNo;
+  // Semana 1 é a semana do primeiro Domingo
+  let weekNum = Math.floor(diffDays / 7) + 1;
+  
+  // Se for antes do primeiro Domingo, pertence à semana 52/53 de 2025
+  if (sunday < firstSunday2026) {
+    const lastSunday2025 = new Date(2025, 11, 28);
+    lastSunday2025.setHours(12, 0, 0, 0);
+    const prevDiff = Math.floor((sunday - lastSunday2025) / (1000 * 60 * 60 * 24));
+    weekNum = 52 + Math.floor(prevDiff / 7) + 1;
+  }
+  
+  return weekNum+2;
 }
 
     function renderWeeks() {
@@ -1004,8 +1016,9 @@ dayBox.innerHTML = `
 
       let startW;
       if (!isWeekSelected) {
- startW = getISOWeek(new Date());
-      } else {
+  // Pega a PRÓXIMA semana para planejamento, não a atual
+  startW = getISOWeek(new Date()) + 1;
+}else {
         startW = parseInt(startWRaw);
       }
 
@@ -1091,10 +1104,12 @@ function populateSelectors() {
   const prevVal = j.value;
   j.innerHTML = `<option value="">-- ${l.selectPlaceholder} --</option>`;
 
-  for (let i = 0; i <= 2; i++) {
-    const futureWeek = currentWeek + i;
-    j.innerHTML += `<option value="${futureWeek}">${l.week} ${futureWeek}</option>`;
-  }
+  // Mostra a semana atual + próximas 2 (mas a atual fica bloqueada para seleção)
+// Agora mostra: semana atual + 1, +2 e +3 (planejamento)
+for (let i = 1; i <= 3; i++) {
+  const futureWeek = currentWeek + i;
+  j.innerHTML += `<option value="${futureWeek}">${l.week} ${futureWeek}</option>`;
+}
   if ([...j.options].some(opt => opt.value === prevVal)) {
     j.value = prevVal;
   }
