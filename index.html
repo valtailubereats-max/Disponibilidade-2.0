@@ -974,20 +974,14 @@ dayBox.innerHTML = `
     }
 
    function getISOWeek(date) {
-  // Calcula por dias de calendário, sem diferença de milissegundos.
-  // Assim, a mudança BST -> GMT não atrasa a semana em um dia.
-  const year = date.getFullYear();
-  const todayUTC = Date.UTC(year, date.getMonth(), date.getDate());
-  const dayOfWeek = date.getDay();
-  const sundayUTC = todayUTC - dayOfWeek * 86400000;
-  const firstSundayUTC = Date.UTC(year, 0, 4);
-  let weekNum = Math.floor((sundayUTC - firstSundayUTC) / (7 * 86400000)) + 1;
-  if (sundayUTC < firstSundayUTC) {
-    const lastSundayPreviousYear = Date.UTC(year - 1, 11, 28);
-    weekNum = 53 + Math.floor((sundayUTC - lastSundayPreviousYear) / (7 * 86400000));
-  }
-  // Mantém a numeração personalizada já utilizada no aplicativo.
-  return weekNum + 2;
+  // Semana de domingo a sábado; cálculo por calendário UTC, imune a BST/GMT.
+  // 04/01/2026 = início da semana 2 no calendário exibido pelo app.
+  const local = new Date(date);
+  const sundayDay = local.getDate() - local.getDay();
+  const sunday = Date.UTC(local.getFullYear(), local.getMonth(), sundayDay);
+  const firstSunday = Date.UTC(2026, 0, 4);
+  const weekIndex = Math.round((sunday - firstSunday) / 604800000);
+  return weekIndex + 2;
 }
 
     function renderWeeks() {
