@@ -974,34 +974,20 @@ dayBox.innerHTML = `
     }
 
    function getISOWeek(date) {
-  // Fixo para 2026 com semana começando no DOMINGO
-  const d = new Date(date);
-  d.setHours(12, 0, 0, 0);
-  
-  // Ajusta para o Domingo da semana
-  const dayOfWeek = d.getDay();
-  const sunday = new Date(d);
-  sunday.setDate(d.getDate() - dayOfWeek);
-  
-  // Primeiro Domingo de 2026 é 4 de Janeiro
-  const firstSunday2026 = new Date(2026, 0, 4);
-  firstSunday2026.setHours(12, 0, 0, 0);
-  
-  // Calcula diferença em dias
-  const diffDays = Math.floor((sunday - firstSunday2026) / (1000 * 60 * 60 * 24));
-  
-  // Semana 1 é a semana do primeiro Domingo
-  let weekNum = Math.floor(diffDays / 7) + 1;
-  
-  // Se for antes do primeiro Domingo, pertence à semana 52/53 de 2025
-  if (sunday < firstSunday2026) {
-    const lastSunday2025 = new Date(2025, 11, 28);
-    lastSunday2025.setHours(12, 0, 0, 0);
-    const prevDiff = Math.floor((sunday - lastSunday2025) / (1000 * 60 * 60 * 24));
-    weekNum = 52 + Math.floor(prevDiff / 7) + 1;
+  // Calcula por dias de calendário, sem diferença de milissegundos.
+  // Assim, a mudança BST -> GMT não atrasa a semana em um dia.
+  const year = date.getFullYear();
+  const todayUTC = Date.UTC(year, date.getMonth(), date.getDate());
+  const dayOfWeek = date.getDay();
+  const sundayUTC = todayUTC - dayOfWeek * 86400000;
+  const firstSundayUTC = Date.UTC(year, 0, 4);
+  let weekNum = Math.floor((sundayUTC - firstSundayUTC) / (7 * 86400000)) + 1;
+  if (sundayUTC < firstSundayUTC) {
+    const lastSundayPreviousYear = Date.UTC(year - 1, 11, 28);
+    weekNum = 53 + Math.floor((sundayUTC - lastSundayPreviousYear) / (7 * 86400000));
   }
-  
-  return weekNum+2;
+  // Mantém a numeração personalizada já utilizada no aplicativo.
+  return weekNum + 2;
 }
 
     function renderWeeks() {
